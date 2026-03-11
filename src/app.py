@@ -8,6 +8,7 @@ for extracurricular activities at Mergington High School.
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 import os
 from pathlib import Path
 
@@ -78,6 +79,37 @@ activities = {
 }
 
 
+class StudentCreate(BaseModel):
+    name: str
+    email: str
+    status: str
+    admission_date: str
+    batch: str
+    document_submission_status: str
+    attendance: float
+    average_score: float
+    health_status: str
+    disability_status: str
+    participation_details: str
+
+
+class Student(StudentCreate):
+    id: str
+
+
+# In-memory student database.
+students = {}
+student_email_index = {}
+student_id_counter = 1
+
+
+def generate_student_id() -> str:
+    global student_id_counter
+    student_id = f"STU-{student_id_counter:04d}"
+    student_id_counter += 1
+    return student_id
+
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/static/index.html")
@@ -86,6 +118,38 @@ def root():
 @app.get("/activities")
 def get_activities():
     return activities
+
+
+@app.post("/students")
+def create_student(payload: StudentCreate):
+    """Create a new student profile with an auto-generated unique ID."""
+    email_key = payload.email.strip().lower()
+
+    if email_key in student_email_index:
+        raise HTTPException(status_code=400, detail="Student email already exists")
+
+    student_id = generate_student_id()
+    student = Student(id=student_id, **payload.model_dump())
+
+    students[student_id] = student
+    student_email_index[email_key] = student_id
+
+    return student
+
+
+@app.get("/students")
+def list_students():
+    """Return all student profiles."""
+    return list(students.values())
+
+
+@app.get("/students/{student_id}")
+def get_student(student_id: str):
+    """Return one student profile by ID."""
+    student = students.get(student_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student
 
 
 @app.post("/activities/{activity_name}/signup")

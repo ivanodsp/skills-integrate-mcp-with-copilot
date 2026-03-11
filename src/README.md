@@ -6,6 +6,7 @@ A super simple FastAPI application that allows students to view and sign up for 
 
 - View all available extracurricular activities
 - Sign up for activities
+- Manage student profiles
 
 ## Getting Started
 
@@ -31,6 +32,9 @@ A super simple FastAPI application that allows students to view and sign up for 
 | ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
 | GET    | `/activities`                                                     | Get all activities with their details and current participant count |
 | POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Sign up for an activity                                             |
+| POST   | `/students`                                                       | Create a student profile                                            |
+| GET    | `/students`                                                       | List all student profiles                                           |
+| GET    | `/students/{student_id}`                                          | Get one student profile by ID                                       |
 
 ## Data Model
 
@@ -43,8 +47,18 @@ The application uses a simple data model with meaningful identifiers:
    - Maximum number of participants allowed
    - List of student emails who are signed up
 
-2. **Students** - Uses email as identifier:
+2. **Students** - Uses generated student ID as identifier:
+   - ID (format: `STU-0001`, `STU-0002`, ...)
    - Name
-   - Grade level
+   - Email (must be unique)
+   - Status
+   - Admission date
+   - Batch
+   - Document submission status
+   - Attendance
+   - Average score
+   - Health status
+   - Disability status
+   - Participation details
 
 All data is stored in memory, which means data will be reset when the server restarts.
